@@ -288,9 +288,27 @@ st.markdown(
     .st-key-audio_prep,
     .st-key-model_prep {
         min-height: 0;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
         padding: 1.15rem 1.25rem;
         border: 1px solid var(--line);
         background: var(--paper);
+    }
+    .st-key-audio_prep > div,
+    .st-key-model_prep > div {
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .st-key-audio_prep [data-testid="stFileUploader"],
+    .st-key-model_prep [data-baseweb="select"],
+    .st-key-model_prep [data-baseweb="select"] > div {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .panel-label {
         margin-bottom: 0.5rem;
