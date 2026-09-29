@@ -310,6 +310,18 @@ st.markdown(
         max-width: 100%;
         box-sizing: border-box;
     }
+    .st-key-model_prep [data-testid="stSelectbox"] {
+        width: calc(100% - 0.8rem);
+        max-width: calc(100% - 0.8rem);
+        min-width: 0;
+        box-sizing: border-box;
+    }
+    .st-key-model_prep .model-note,
+    .st-key-model_prep .dataset-note {
+        width: calc(100% - 0.8rem);
+        max-width: calc(100% - 0.8rem);
+        box-sizing: border-box;
+    }
     .panel-label {
         margin-bottom: 0.5rem;
         color: var(--muted);
