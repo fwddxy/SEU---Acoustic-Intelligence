@@ -1,4 +1,4 @@
-"""下载 ESC-50，并按照官方 fold 生成 ESC-10 数据清单。"""
+"""下载 ESC-50，并按照官方 fold 生成十类或五十类数据清单。"""
 
 from __future__ import annotations
 

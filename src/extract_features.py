@@ -1,4 +1,4 @@
-"""提取并缓存 ESC-10 的 MFCC 和 YAMNet 声音嵌入特征。"""
+"""提取并缓存 ESC-10 或 ESC-50 的 MFCC 与 YAMNet 声音特征。"""
 
 from __future__ import annotations
 

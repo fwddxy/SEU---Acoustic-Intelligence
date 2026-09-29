@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from src.predict import MODEL_DIR, MODEL_NAMES, predict_features
+from src.predict import DISPLAY_LABELS, MODEL_DIR, MODEL_NAMES, predict_features
 from src.yamnet import analyze_audio
 
 
@@ -18,6 +18,11 @@ MODEL_LABELS = {
     "mfcc_svm": "MFCC + 支持向量机",
     "yamnet_svm": "YAMNet + 支持向量机",
     "yamnet_mlp": "YAMNet + 多层感知机",
+}
+MODEL_ACCURACY = {
+    "mfcc_svm": "46.50%",
+    "yamnet_svm": "83.00%",
+    "yamnet_mlp": "81.25%",
 }
 
 CLASS_LABELS = {
@@ -48,7 +53,7 @@ YAMNET_LABELS = {
 
 
 def display_class(label: str) -> str:
-    return CLASS_LABELS.get(label, label)
+    return DISPLAY_LABELS.get(label, CLASS_LABELS.get(label, label))
 
 
 def display_yamnet_label(label: str) -> str:
@@ -462,10 +467,13 @@ st.markdown(
 )
 
 available_models = [
-    name for name in MODEL_NAMES if (MODEL_DIR / f"{name}.joblib").exists()
+    name
+    for name in MODEL_NAMES
+    if (MODEL_DIR / f"esc50_{name}.joblib").exists()
+    and (MODEL_DIR / "esc50_labels.json").exists()
 ]
 if not available_models:
-    st.error("没有找到 ESC-10 分类模型，请先完成特征提取和模型训练。")
+    st.error("没有找到环境声音分类模型，请先完成特征提取和模型训练。")
     st.stop()
 
 st.markdown(
@@ -479,7 +487,7 @@ st.markdown(
     </div>
     <div class="intro">
         <div>
-            <div class="intro-kicker">ESC-10 · Acoustic intelligence</div>
+            <div class="intro-kicker">ESC-50 · 环境声音智能识别</div>
             <h1>把声音变成 <em>可读的信号。</em></h1>
         </div>
         <p>上传环境音，系统会自动识别，并在下方展示候选类别、波形和频谱。</p>
@@ -494,7 +502,7 @@ with setup_left:
     st.markdown(
         """
         <div class="prep-panel">
-            <div class="panel-label">Audio input</div>
+            <div class="panel-label">音频输入</div>
             <div class="panel-title">选择一段声音</div>
             <p class="panel-copy">支持 WAV、FLAC、OGG 和 MP3，分析前统一重采样到 16 kHz。</p>
         """,
@@ -511,9 +519,9 @@ with setup_right:
     st.markdown(
         """
         <div class="prep-panel">
-            <div class="panel-label">Classifier</div>
+            <div class="panel-label">分类器</div>
             <div class="panel-title">选择识别模型</div>
-            <p class="panel-copy">默认使用 YAMNet 嵌入 + 支持向量机，适合快速识别十类环境声音。</p>
+            <p class="panel-copy">默认使用 YAMNet 嵌入 + 支持向量机，可识别 ESC-50 的 50 类环境声音。</p>
         """,
         unsafe_allow_html=True,
     )
@@ -527,7 +535,7 @@ with setup_right:
         label_visibility="collapsed",
     )
     st.markdown(
-        '<div class="model-note">推荐模型在独立测试集上的准确率为 93.75%。</div></div>',
+        f'<div class="model-note">{MODEL_LABELS[model_name]} 在独立测试集上的准确率为 {MODEL_ACCURACY[model_name]}，指标来自 ESC-50 官方测试折。</div></div>',
         unsafe_allow_html=True,
     )
 
@@ -562,7 +570,7 @@ with result_left:
             <div class="result-value">{display_class(predictions[0]["label"])}</div>
             <div class="result-confidence">置信度 {predictions[0]["score"]:.1%}</div>
             <div class="result-detail">
-                使用 {MODEL_LABELS[model_name]} 完成识别，结果来自 ESC-10 十类环境声音标签。
+                使用 {MODEL_LABELS[model_name]} 完成识别，结果来自 ESC-50 五十类环境声音标签。
             </div>
         </div>
         """,
@@ -607,7 +615,7 @@ with waveform_tab:
         st.pyplot(spectrogram_figure(result), clear_figure=True)
         st.markdown("</div>", unsafe_allow_html=True)
 with event_tab:
-    st.caption("YAMNet 通用事件用于辅助判断，不等同于 ESC-10 最终分类结果。")
+    st.caption("YAMNet 通用事件用于辅助观察；上方结果来自 ESC-50 五十类分类模型。")
     event_data = pd.DataFrame(result["top_results"])
     event_data["label"] = event_data["label"].map(display_yamnet_label)
     event_data = event_data[["label", "score"]].set_index("label")

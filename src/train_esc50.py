@@ -52,6 +52,11 @@ def train_all(features_path: Path = FEATURES) -> dict:
     train, val, test = (splits == part for part in ("train", "val", "test"))
     if tuple(mask.sum() for mask in (train, val, test)) != (1200, 400, 400):
         raise ValueError("ESC-50 数据划分应为训练 1200、验证 400、测试 400。")
+    manifest = pd.read_csv(ROOT / "outputs" / "esc50_manifest.csv").set_index("path")
+    source_ids = manifest.loc[paths, "src_file"].astype(str).to_numpy()
+    val = val & ~np.isin(source_ids, source_ids[test])
+    if set(source_ids[train | val]) & set(source_ids[test]):
+        raise ValueError("训练或验证音频与测试音频存在同源文件。")
 
     names = pd.DataFrame({"label": labels, "category": categories}).drop_duplicates().sort_values("label")
     if len(names) != 50 or names["label"].tolist() != list(range(50)):
@@ -62,7 +67,7 @@ def train_all(features_path: Path = FEATURES) -> dict:
         "stats": pooled,
         "mfcc": mfcc,
     }
-    # Validation fold is used only to choose the SVM representation and C.
+    # Exclude validation clips sharing a source with the test fold.
     candidates = []
     for kind in ("mean", "stats"):
         for c in (1.0, 10.0):
@@ -125,6 +130,7 @@ def train_all(features_path: Path = FEATURES) -> dict:
         }
         print(f"{name}：50 类测试准确率 {summary[name]['accuracy']:.2%}", flush=True)
     summary["selection"] = {"validation_candidates": candidates, "best_yamnet_svm": best}
+    summary["selection"]["validation_samples"] = int(val.sum())
     (OUTPUT_DIR / "summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
     )
