@@ -285,7 +285,8 @@ st.markdown(
         font-size: 0.76rem;
         white-space: nowrap;
     }
-    .prep-panel {
+    .st-key-audio_prep,
+    .st-key-model_prep {
         min-height: 0;
         padding: 1.15rem 1.25rem;
         border: 1px solid var(--line);
@@ -336,6 +337,16 @@ st.markdown(
         color: var(--muted);
         font-size: 0.74rem;
         line-height: 1.4;
+    }
+    .dataset-note {
+        margin-top: 0.65rem;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+    .dataset-note a {
+        color: var(--mint);
+        text-decoration: none;
     }
     .empty-state {
         margin-top: 0.7rem;
@@ -450,7 +461,8 @@ st.markdown(
         .block-container { padding: 0.9rem 1rem 3rem; }
         .intro { display: block; min-height: auto; padding: 1.1rem; }
         .intro p { margin-top: 0.5rem; text-align: left; }
-        .prep-panel { min-height: 0; }
+        .st-key-audio_prep,
+        .st-key-model_prep { min-height: 0; }
         .section-header {
             grid-template-columns: auto auto;
             row-gap: 0.2rem;
@@ -499,45 +511,48 @@ st.markdown(
 section_header("01 / 03", "准备分析", "上传音频，并选择用于识别的模型。")
 setup_left, setup_right = st.columns([1.05, 1.15], gap="large")
 with setup_left:
-    st.markdown(
-        """
-        <div class="prep-panel">
+    with st.container(border=True, key="audio_prep"):
+        st.markdown(
+            """
             <div class="panel-label">音频输入</div>
             <div class="panel-title">选择一段声音</div>
             <p class="panel-copy">支持 WAV、FLAC、OGG 和 MP3，分析前统一重采样到 16 kHz。</p>
-        """,
-        unsafe_allow_html=True,
-    )
-    uploaded = st.file_uploader(
-        "音频文件",
-        type=["wav", "flac", "ogg", "mp3"],
-        label_visibility="collapsed",
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+            """,
+            unsafe_allow_html=True,
+        )
+        uploaded = st.file_uploader(
+            "音频文件",
+            type=["wav", "flac", "ogg", "mp3"],
+            label_visibility="collapsed",
+        )
 
 with setup_right:
-    st.markdown(
-        """
-        <div class="prep-panel">
+    with st.container(border=True, key="model_prep"):
+        st.markdown(
+            """
             <div class="panel-label">分类器</div>
             <div class="panel-title">选择识别模型</div>
             <p class="panel-copy">默认使用 YAMNet 嵌入 + 支持向量机，可识别 ESC-50 的 50 类环境声音。</p>
-        """,
-        unsafe_allow_html=True,
-    )
-    model_name = st.selectbox(
-        "分类器",
-        available_models,
-        index=available_models.index("yamnet_svm")
-        if "yamnet_svm" in available_models
-        else 0,
-        format_func=lambda name: MODEL_LABELS[name],
-        label_visibility="collapsed",
-    )
-    st.markdown(
-        f'<div class="model-note">{MODEL_LABELS[model_name]} 在独立测试集上的准确率为 {MODEL_ACCURACY[model_name]}，指标来自 ESC-50 官方测试折。</div></div>',
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
+        model_name = st.selectbox(
+            "分类器",
+            available_models,
+            index=available_models.index("yamnet_svm")
+            if "yamnet_svm" in available_models
+            else 0,
+            format_func=lambda name: MODEL_LABELS[name],
+            label_visibility="collapsed",
+        )
+        st.markdown(
+            f'<div class="model-note">{MODEL_LABELS[model_name]} 在独立测试集上的准确率为 {MODEL_ACCURACY[model_name]}，指标来自 ESC-50 官方测试折。</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="dataset-note">训练数据集：ESC-50 官方数据集。需要复现实验时，请从 <a href="https://github.com/karolpiczak/ESC-50" target="_blank">官方仓库</a> 下载；部署和使用网站不需要下载数据集。</div>',
+            unsafe_allow_html=True,
+        )
 
 if uploaded is None:
     st.markdown(
