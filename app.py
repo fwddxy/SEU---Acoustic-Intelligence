@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import tempfile
 from pathlib import Path
 
@@ -58,6 +59,17 @@ def display_class(label: str) -> str:
 
 def display_yamnet_label(label: str) -> str:
     return YAMNET_LABELS.get(label, label)
+
+
+def school_logo_markup() -> str:
+    logo_path = Path(__file__).with_name("校标.jpg")
+    if not logo_path.exists():
+        return '<span class="seu-mark">SEU</span>'
+    encoded = base64.b64encode(logo_path.read_bytes()).decode("ascii")
+    return (
+        '<img class="school-logo" src="data:image/jpeg;base64,'
+        f'{encoded}" alt="东南大学校标">'
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -182,8 +194,8 @@ st.markdown(
         align-items: center;
         gap: 0.6rem;
         color: var(--ink);
-        font-size: 0.98rem;
-        font-weight: 750;
+        font-size: 1.08rem;
+        font-weight: 600;
     }
     .brand-mark {
         display: grid;
@@ -194,10 +206,31 @@ st.markdown(
         color: var(--mint);
         font-size: 0.95rem;
     }
+    .seu-mark {
+        display: grid;
+        width: 2rem;
+        height: 2rem;
+        place-items: center;
+        border: 1px solid #9bc8bf;
+        background: var(--mint-soft);
+        color: var(--mint);
+        font-size: 0.58rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+    .school-logo {
+        display: block;
+        width: 2.2rem;
+        height: 2.2rem;
+        object-fit: contain;
+        border: 1px solid #c8d9d5;
+        background: #ffffff;
+    }
+    .brand strong { font-weight: 750; }
     .brand-sub {
-        color: var(--muted);
-        font-size: 0.75rem;
-        font-weight: 500;
+        color: var(--ink);
+        font-size: 1.08rem;
+        font-weight: 600;
     }
     .online {
         display: inline-flex;
@@ -214,19 +247,16 @@ st.markdown(
         background: #2aa987;
     }
     .intro {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 2rem;
+        display: block;
         min-height: 6.4rem;
-        padding: 1rem 1.45rem;
+        padding: 1rem 1.45rem 1.15rem;
         border: 1px solid #cfddda;
         background: var(--paper);
     }
     .intro-kicker {
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.38rem;
         color: var(--mint);
-        font-size: 0.66rem;
+        font-size: 0.88rem;
         font-weight: 750;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -234,7 +264,7 @@ st.markdown(
     .intro h1 {
         margin: 0;
         color: var(--ink);
-        font-size: clamp(1.55rem, 3vw, 2.35rem);
+        font-size: clamp(1.35rem, 2.1vw, 1.8rem);
         font-weight: 750;
         line-height: 1.12;
     }
@@ -243,12 +273,12 @@ st.markdown(
         font-style: normal;
     }
     .intro p {
-        max-width: 410px;
-        margin: 0;
+        max-width: 680px;
+        margin: 0.45rem 0 0;
         color: var(--muted);
         font-size: 0.78rem;
         line-height: 1.55;
-        text-align: right;
+        text-align: left;
     }
     .section-header {
         display: grid;
@@ -287,6 +317,7 @@ st.markdown(
     }
     .st-key-audio_prep,
     .st-key-model_prep {
+        height: auto;
         min-height: 0;
         min-width: 0;
         max-width: 100%;
@@ -318,9 +349,14 @@ st.markdown(
     }
     .st-key-model_prep .model-note,
     .st-key-model_prep .dataset-note {
-        width: calc(100% - 0.8rem);
-        max-width: calc(100% - 0.8rem);
+        display: block;
+        width: auto;
+        max-width: 100%;
+        margin-right: 0.8rem;
         box-sizing: border-box;
+        overflow-wrap: anywhere;
+        word-break: break-all;
+        white-space: normal;
     }
     .panel-label {
         margin-bottom: 0.5rem;
@@ -371,8 +407,10 @@ st.markdown(
     .dataset-note {
         margin-top: 0.65rem;
         color: var(--muted);
-        font-size: 0.72rem;
-        line-height: 1.45;
+        font-size: 0.7rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
     .dataset-note a {
         color: var(--mint);
@@ -489,10 +527,13 @@ st.markdown(
     .stAlert { border-radius: 0; }
     @media (max-width: 800px) {
         .block-container { padding: 0.9rem 1rem 3rem; }
-        .intro { display: block; min-height: auto; padding: 1.1rem; }
+        .intro { min-height: auto; padding: 1.1rem; }
         .intro p { margin-top: 0.5rem; text-align: left; }
         .st-key-audio_prep,
-        .st-key-model_prep { min-height: 0; }
+        .st-key-model_prep {
+            height: auto;
+            min-height: 0;
+        }
         .section-header {
             grid-template-columns: auto auto;
             row-gap: 0.2rem;
@@ -518,12 +559,13 @@ if not available_models:
     st.error("没有找到环境声音分类模型，请先完成特征提取和模型训练。")
     st.stop()
 
+logo_markup = school_logo_markup()
 st.markdown(
-    """
+    f"""
     <div class="topbar">
         <div class="brand">
-            <span class="brand-mark">∿</span>
-            <span>回声感知 <span class="brand-sub">/ 环境声音识别</span></span>
+            {logo_markup}
+            <span><strong>东南大学</strong> <span class="brand-sub">/ 回声感知 · 环境声音识别</span></span>
         </div>
         <div class="online"><span class="online-dot"></span>模型在线</div>
     </div>
@@ -531,8 +573,8 @@ st.markdown(
         <div>
             <div class="intro-kicker">ESC-50 · 环境声音智能识别</div>
             <h1>把声音变成 <em>可读的信号。</em></h1>
+            <p>上传环境音，系统会自动识别，并在下方展示候选类别、波形和频谱。</p>
         </div>
-        <p>上传环境音，系统会自动识别，并在下方展示候选类别、波形和频谱。</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -576,11 +618,11 @@ with setup_right:
             label_visibility="collapsed",
         )
         st.markdown(
-            f'<div class="model-note">{MODEL_LABELS[model_name]} 在独立测试集上的准确率为 {MODEL_ACCURACY[model_name]}，指标来自 ESC-50 官方测试折。</div>',
+            f'<div class="model-note">测试准确率 {MODEL_ACCURACY[model_name]} · ESC-50 官方测试折</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<div class="dataset-note">训练数据集：ESC-50 官方数据集。需要复现实验时，请从 <a href="https://github.com/karolpiczak/ESC-50" target="_blank">官方仓库</a> 下载；部署和使用网站不需要下载数据集。</div>',
+            '<div class="dataset-note">训练数据：ESC-50。复现实验请从 <a href="https://github.com/karolpiczak/ESC-50" target="_blank">官方仓库</a> 下载；部署无需数据集。</div>',
             unsafe_allow_html=True,
         )
 
